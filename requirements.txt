@@ -1,0 +1,10 @@
+openai
+requests
+SpeechRecognition
+pydub
+python-dotenv
+gTTS
+urllib3
+Flask
+line-bot-sdk
+deepface
