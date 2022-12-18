@@ -23,7 +23,8 @@ NGROK_URL = "使用者 ngrok forwarding URL"
 
 ### 第三步：啟動專案
 
-點開該專案下的 `ngrok.exe`，並輸入 `ngrok http 5000` 。  
+到 `ngrok` [官網](https://ngrok.com/download)下載安裝檔，並在解壓縮後將其執行檔放置到該專案下。  
+放置完畢後，在該專案下打開執行檔，並輸入 `ngrok http 5000` 。  
 輸入完畢後，複製其生成的 `HTTPS` 位址，並黏貼到 `.env` 及 `LINE Bot Webhook URL` 上。  
 黏貼完畢後，在該專案下打開終端機，並輸入 `python main.py` 。
 

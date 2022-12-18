@@ -266,13 +266,11 @@ def data():
 def deepface_f(event):
     UserId = event.source.user_id
     if (event.message.type == "image"):
-        test = os.getcwd()
         # print('test = ',test)
         print('Image event')
         SendImage = line_bot_api.get_message_content(event.message.id)
-        test = os.getcwd()
         # print('test = ',test)
-        path = test + '\\Images\\' + UserId + '.png'
+        path = './Images/' + UserId + '.png'
         # print('path = ',path)
 
         with open(path, 'wb') as fd:
@@ -332,21 +330,21 @@ def images_open(event, url):
     line_reply = url
     line_bot_api.reply_message(
         event.reply_token, TextSendMessage(text=line_reply))
-    """from PIL import Image
-  print("URL : ",url)
-  im = Image.open(url) 
-  im.show() 
-  print(im)
-  face_analysis = DeepFace.analyze(img_path=url)
-  emotion = face_analysis["dominant_emotion"]
-  gender = face_analysis["gender"]
-  age = face_analysis["age"]
-  race = face_analysis["dominant_race"]
-  
-  line_bot_api.reply_message(
-    event.reply_token,
-    TextSendMessage(text="Emotion: " + emotion + "\n" + "Gender: " + gender +
-                    "\n" + "Age: " + age + "\n" + "Race: " + race + "\n"))"""
+    """
+    from PIL import Image
+    print("URL : ",url)
+    im = Image.open(url)
+    im.show()
+    print(im)
+    face_analysis = DeepFace.analyze(img_path=url)
+    emotion = face_analysis["dominant_emotion"]
+    gender = face_analysis["gender"]
+    age = face_analysis["age"]
+    race = face_analysis["dominant_race"]
+
+    line_bot_api.reply_message(
+        event.reply_token, TextSendMessage(text="Emotion: " + emotion + "\n" + "Gender: " + gender + "\n" + "Age: " + age + "\n" + "Race: " + race + "\n"))
+    """
 
 
 if __name__ == '__main__':
