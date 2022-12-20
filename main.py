@@ -66,17 +66,16 @@ def handle_message(event):
     Input_text(event,mtext)
   elif(event.message.type == "audio"):
     UserID = event.source.user_id
-    test = os.getcwd()
-    path = test +'\\audio\\'+ UserID + ".mp3"
+    path ='audio/'+ UserID + ".wav"
     #print('path = ',path)
     audio_content = line_bot_api.get_message_content(event.message.id)
     with open(path, 'wb') as fd:
         for chunk in audio_content.iter_content():
             fd.write(chunk)
 
-    #轉檔C:\\Users\\ACER\\AppData\\Local\\LINE\\Data\\plugin\\ffmpeg\\1.0.0.5\\ffmpeg.exe
+    #轉檔
     
-    AudioSegment.converter = 'C:\\Users\\ACER\\Downloads\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe'
+    #AudioSegment.converter = 'C:\\Users\\ACER\\Downloads\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe'
     sound = AudioSegment.from_file_using_temporary_files(path)
     path = os.path.splitext(path)[0] + '.wav'
     sound.export(path, format="wav")
@@ -179,7 +178,7 @@ def convert_T_to_A(event):
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
   else:
     tts = gTTS(text=msg, lang="zh-tw")
-    tts.save("C:/Users/ACER/OneDrive/Documents/Python_Scripts/tts/" + msg + ".mp3")
+    tts.save("tts/" + msg + ".mp3")
     line_bot_api.reply_message(
       event.reply_token,
       AudioSendMessage(
@@ -241,13 +240,12 @@ def data():
 def deepface_f(event):
   UserId = event.source.user_id
   if (event.message.type == "image"):
-    test = os.getcwd()
+    #test = os.getcwd()
     #print('test = ',test)
-    print('Image event')
+    #print('Image event')
     SendImage = line_bot_api.get_message_content(event.message.id)
-    test = os.getcwd()
     #print('test = ',test)
-    path = test +'\\Images\\'+ UserId + '.png'
+    path ='Images/'+ UserId + '.png'
     #print('path = ',path)
 
     with open(path, 'wb') as fd:
