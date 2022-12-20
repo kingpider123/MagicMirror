@@ -1,5 +1,6 @@
 import os
 import openai
+import sqlite3
 import requests
 import speech_recognition as sr
 from pydub import AudioSegment
@@ -100,6 +101,8 @@ def Input_text(event,mtext):
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply)) 
     elif(floor==0 and (mtext =='start'or mtext=='Start')):
         start(event)
+    elif(floor==0 and (mtext =='broadcast'or mtext=='Broadcast')):
+        broadcast(event)
     elif (floor==1):
       try:
         if(int(mtext)==1):
@@ -138,6 +141,25 @@ def Input_text(event,mtext):
     else:
       line_reply='輸入 "start" 或 "Start" 來使用哦～ '
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+
+def broadcast(event):
+  conn = sqlite3.connect("line.db")
+  cursor = conn.cursor()
+  cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id TEXT)")
+
+  data = cursor.execute("SELECT rowid FROM users WHERE user_id = ?", (event.source.user_id,)).fetchall()
+  if len(data) == 0:
+    cursor.execute("INSERT INTO users (user_id) VALUES (?)", (event.source.user_id,))
+
+  conn.commit()
+
+  rows = cursor.execute("SELECT * FROM users").fetchall()
+  print(rows)
+  for row in rows:
+    line_bot_api.push_message(row[0], TextSendMessage(text='{}: 廣播測試'.format(event.source.user_id)))
+
+  conn.close()
+
 def start(event):
   global floor
   Fs = ['聊天','文字轉語音','天氣預報','圖片人物分析']

@@ -131,3 +131,6 @@ dmypy.json
 # ngrok
 ngrok
 ngrok.*
+
+# database
+line.db
