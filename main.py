@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from gtts import gTTS
 from urllib.parse import quote
 from flask import Flask, request, abort, send_file
+from flask_apscheduler import APScheduler
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextSendMessage, AudioMessage, AudioSendMessage
@@ -21,6 +22,14 @@ handler = WebhookHandler(os.getenv("SECRET"))
 ngrok_url = os.getenv("NGROK_URL")
 
 app = Flask(__name__)
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+
+@scheduler.task('cron', id='do_job', day='*', hour='8')
+def job():
+    broadcast(None, "早安你好")
 
 
 @app.route("/")
@@ -102,7 +111,7 @@ def Input_text(event,mtext):
     elif(floor==0 and (mtext =='start'or mtext=='Start')):
         start(event)
     elif(floor==0 and (mtext =='broadcast'or mtext=='Broadcast')):
-        broadcast(event)
+        broadcast(event, "廣播測試")
     elif (floor==1):
       try:
         if(int(mtext)==1):
@@ -142,21 +151,21 @@ def Input_text(event,mtext):
       line_reply='輸入 "start" 或 "Start" 來使用哦～ '
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
 
-def broadcast(event):
+def broadcast(event, string):
   conn = sqlite3.connect("line.db")
   cursor = conn.cursor()
   cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id TEXT)")
 
-  data = cursor.execute("SELECT rowid FROM users WHERE user_id = ?", (event.source.user_id,)).fetchall()
-  if len(data) == 0:
-    cursor.execute("INSERT INTO users (user_id) VALUES (?)", (event.source.user_id,))
+  if event is not None:
+    data = cursor.execute("SELECT rowid FROM users WHERE user_id = ?", (event.source.user_id,)).fetchall()
+    if len(data) == 0:
+      cursor.execute("INSERT INTO users (user_id) VALUES (?)", (event.source.user_id,))
 
   conn.commit()
 
   rows = cursor.execute("SELECT * FROM users").fetchall()
-  print(rows)
   for row in rows:
-    line_bot_api.push_message(row[0], TextSendMessage(text='{}: 廣播測試'.format(event.source.user_id)))
+    line_bot_api.push_message(row[0], TextSendMessage(text=string))
 
   conn.close()
 
