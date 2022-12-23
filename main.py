@@ -13,6 +13,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextSendMessage, AudioMessage, AudioSendMessage
 from deepface import DeepFace
+from Climate import Climate_
 
 load_dotenv()
 
@@ -217,12 +218,13 @@ def convert_T_to_A(event):
         quote(msg),
         duration=2000))
 def climate(event):
+  CL = Climate_()
   global floor
   if (floor==12):
     mtext = event.message.text
     print("mtext : %s\nfloor : %s"%(mtext,floor))
     #if (mtext == 'climate' or mtext=='Climate'):
-    climate_data = Climate()#print("Climate locations : \n",climate_data['Locations'])
+    climate_data = CL#print("Climate locations : \n",climate_data['Locations'])
     line_reply=''
     for i in range(len(climate_data["Locations"])):
       line_reply+=f'{i+1}.{climate_data["Locations"][i]}\n'
@@ -243,7 +245,7 @@ def climate(event):
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     #try:
     elif (mtext.isdigit() and int(mtext)>=1 and int(mtext)<=25):
-      climate_data = Climate()
+      climate_data = CL
       tmp = int(mtext) - 1
       tmp_location = climate_data['Locations'][tmp]
       line_reply += f'{climate_data["Locations"][tmp]}'
@@ -318,3 +320,4 @@ if __name__ == '__main__':
     app.run()
 
 # pyinstaller main.py -F --paths="/home/runner/Chap10/venv/lib/python3.8/site-packages/cv2"
+
