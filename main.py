@@ -1,7 +1,6 @@
 import os
 import openai
 import sqlite3
-import requests
 import speech_recognition as sr
 from pydub import AudioSegment
 from dotenv import load_dotenv
@@ -300,7 +299,7 @@ def data():
   cur.execute('SELECT * FROM movie')
   test = cur.fetchall()
   print("testdb : ",test)
-  return tes
+  return test
 def deepface_f(event):
   UserId = event.source.user_id
   if (event.message.type == "image"):
