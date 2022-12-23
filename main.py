@@ -66,7 +66,7 @@ def handle_message(event):
   UserId = event.source.user_id
   try: USER_Floor[UserId]
   except KeyError:USER_Floor[UserId]=0
-  #10=聊天,11=語音轉文字,12=天氣預報
+  #10=聊天,11=語音轉文字,12=天氣預報,13=圖片檢測
   if (event.message.type == "image"):
     if(int(USER_Floor[UserId])==13):deepface_f(event)
     else:
