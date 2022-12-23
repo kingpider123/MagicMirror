@@ -99,46 +99,62 @@ def handle_message(event):
     with file_audio as source:
         audio_text = r.record(source)
     text = r.recognize_google(audio_text, language='zh-Hant')
-    line_reply = text
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+    audiotext = text
+    print('audiotext = ',audiotext)
+    Input_text(event,audiotext)
     
 def Input_text(event,mtext):
     global floor
     print("mtext : %s\nfloor : %s"%(mtext,floor))
-    if(mtext == "End"):
+    if(mtext == "End" or mtext=="結束"):
       floor = 0
       line_reply = '886~'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply)) 
-    elif(floor==0 and (mtext =='start'or mtext=='Start')):
+    elif(floor==0 and (mtext =='start'or mtext=='Start'or mtext=="開始")):
         start(event)
     elif(floor==0 and (mtext =='broadcast'or mtext=='Broadcast')):
         broadcast(event, "廣播測試")
     elif (floor==1):
-      try:
-        if(int(mtext)==1):
-          floor=10
-          line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
-          line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
-        elif(int(mtext)==2):
-          floor=11
-          line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
-          line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
-        elif(int(mtext)==3):
-          floor=12
-          climate(event)
-        elif(int(mtext)==4):
-          floor=13
-          line_reply='進入圖片檢測模式(輸入"Quit"退出)'
-          line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
-        else:
-          line_reply = "Invalid input try again!"
-          line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
-    #profile = line_bot_api.get_profile(UserId)#print("UserId : \n",UserId)#print("profile : \n",profile)
-      except:
+      if mtext.isdigit():
+        try:
+          if(int(mtext)==1):
+            floor=10
+            line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+          elif(int(mtext)==2):
+            floor=11
+            line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+          elif(int(mtext)==3):
+            floor=12
+            climate(event)
+          elif(int(mtext)==4):
+            floor=13
+            line_reply='進入圖片檢測模式(輸入"Quit"退出)'
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+          else:
+            line_reply = "Invalid input try again!"
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+      #profile = line_bot_api.get_profile(UserId)#print("UserId : \n",UserId)#print("profile : \n",profile)
+        except:
+          start(event)
+      elif(mtext=="聊天"):
+        floor=10
+        line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+      elif(mtext=="文字轉語音"):
+        floor=11
+        line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+      elif(mtext=="天氣預報"):
+        floor=12
+        climate(event,mtext)
+      else:
         start(event)
+        
     elif (floor==10):conversation(event)
     elif (floor==11):convert_T_to_A(event)
-    elif (floor==12 or floor==22):climate(event)
+    elif (floor==12 or floor==22):climate(event,mtext)
     elif(floor==13):
         if(mtext == "Quit"):
             floor =1
@@ -217,11 +233,10 @@ def convert_T_to_A(event):
         original_content_url=ngrok_url+"/tts/"+
         quote(msg),
         duration=2000))
-def climate(event):
+def climate(event,mtext):
   CL = Climate_()
   global floor
   if (floor==12):
-    mtext = event.message.text
     print("mtext : %s\nfloor : %s"%(mtext,floor))
     #if (mtext == 'climate' or mtext=='Climate'):
     climate_data = CL#print("Climate locations : \n",climate_data['Locations'])
@@ -235,17 +250,16 @@ def climate(event):
     # line_reply = 'Enter "Climate" or "climate" to start~'
     # line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
   elif (floor==22):
-    mtext = event.message.text
     print("mtext : %s\nfloor : %s"%(mtext,floor))
     line_reply=''
-    if mtext == 'quit' or mtext =='Quit':
+    climate_data = CL
+    if mtext == 'quit' or mtext =='Quit' or mtext=="退出":
       floor = 1
       print('floor : ',floor)
       line_reply = 'Quit done!'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     #try:
     elif (mtext.isdigit() and int(mtext)>=1 and int(mtext)<=25):
-      climate_data = CL
       tmp = int(mtext) - 1
       tmp_location = climate_data['Locations'][tmp]
       line_reply += f'{climate_data["Locations"][tmp]}'
@@ -253,6 +267,19 @@ def climate(event):
         temp_data = climate_data[tmp_location]['Weather'][i]+"|氣溫:"+ climate_data[tmp_location]['MinTemperature'][i] +"~"+ climate_data[tmp_location]['MaxTemperature'][i]+"°C"
         line_reply+=f'\n第{i}天:{temp_data}'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext.isdigit()==False):
+      print('climate_data = ',climate_data)
+      try:
+        tmp_location = mtext
+        print('tmp_location',tmp_location)
+        line_reply += f'{tmp_location}'
+        for i in range(7):
+          temp_data = climate_data[tmp_location]['Weather'][i]+"|氣溫:"+ climate_data[tmp_location]['MinTemperature'][i] +"~"+ climate_data[tmp_location]['MaxTemperature'][i]+"°C"
+          line_reply+=f'\n第{i}天:{temp_data}'
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+      except:
+        line_reply = "Invalid input try again!!!"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     else: 
       line_reply = "Invalid input try again!!!"
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
