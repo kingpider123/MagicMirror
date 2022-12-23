@@ -22,6 +22,8 @@ line_bot_api = LineBotApi(os.getenv("TOKEN"))
 handler = WebhookHandler(os.getenv("SECRET"))
 ngrok_url = os.getenv("NGROK_URL")
 
+USER_Floor={}
+
 app = Flask(__name__)
 scheduler = APScheduler()
 scheduler.init_app(app)
@@ -56,24 +58,24 @@ def callback():
         abort(400)
     return 'OK'
 
-
-floor = 0
 # message = TextMessage
 
 
 @handler.add(MessageEvent)
 def handle_message(event):
-  global floor
+  global USER_Floor
   UserId = event.source.user_id
+  try: USER_Floor[UserId]
+  except KeyError:USER_Floor[UserId]=0
   #10=聊天,11=語音轉文字,12=天氣預報
   if (event.message.type == "image"):
-    if(floor==13):deepface_f(event)
+    if(int(USER_Floor[UserId])==13):deepface_f(event)
     else:
         line_reply = '走錯了吧。。。'
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
   elif(event.message.type == "text"):
     mtext = event.message.text
-    print("mtext : %s\nfloor : %s"%(mtext,floor))
+    print("mtext : %s\nUid : %s\nfloor : %s"%(mtext,UserId,USER_Floor[UserId]))
     Input_text(event,mtext)
   elif(event.message.type == "audio"):
     UserID = event.source.user_id
@@ -83,15 +85,11 @@ def handle_message(event):
     with open(path, 'wb') as fd:
         for chunk in audio_content.iter_content():
             fd.write(chunk)
-
     #轉檔
-    
     #AudioSegment.converter = 'C:\\Users\\ACER\\Downloads\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe'
     sound = AudioSegment.from_file_using_temporary_files(path)
     path = os.path.splitext(path)[0] + '.wav'
     sound.export(path, format="wav")
-    
-
     #辨識
     r = sr.Recognizer()
     file_audio = sr.AudioFile(path)
@@ -104,32 +102,33 @@ def handle_message(event):
     Input_text(event,audiotext)
     
 def Input_text(event,mtext):
-    global floor
-    print("mtext : %s\nfloor : %s"%(mtext,floor))
+    global USER_Floor
+    UserId = event.source.user_id
+    print("mtext : %s\nUid : %s\nfloor : %s"%(mtext,UserId,USER_Floor[UserId]))
     if(mtext == "End" or mtext=="結束"):
-      floor = 0
+      USER_Floor[UserId] = 0
       line_reply = '886~'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply)) 
-    elif(floor==0 and (mtext =='start'or mtext=='Start'or mtext=="開始")):
+    elif(int(USER_Floor[UserId])==0 and (mtext =='start'or mtext=='Start'or mtext=="開始")):
         start(event)
-    elif(floor==0 and (mtext =='broadcast'or mtext=='Broadcast')):
+    elif(int(USER_Floor[UserId])==0 and (mtext =='broadcast'or mtext=='Broadcast')):
         broadcast(event, "廣播測試")
-    elif (floor==1):
+    elif (int(USER_Floor[UserId])==1):
       if mtext.isdigit():
         try:
           if(int(mtext)==1):
-            floor=10
+            USER_Floor[UserId]=10
             line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
           elif(int(mtext)==2):
-            floor=11
+            USER_Floor[UserId]=11
             line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
           elif(int(mtext)==3):
-            floor=12
-            climate(event)
+            USER_Floor[UserId]=12
+            climate(event,mtext)
           elif(int(mtext)==4):
-            floor=13
+            USER_Floor[UserId]=13
             line_reply='進入圖片檢測模式(輸入"Quit"退出)'
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
           else:
@@ -139,26 +138,26 @@ def Input_text(event,mtext):
         except:
           start(event)
       elif(mtext=="聊天"):
-        floor=10
+        USER_Floor[UserId]=10
         line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
       elif(mtext=="文字轉語音"):
-        floor=11
+        USER_Floor[UserId]=11
         line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
       elif(mtext=="天氣預報"):
-        floor=12
+        USER_Floor[UserId]=12
         climate(event,mtext)
       else:
         start(event)
         
-    elif (floor==10):conversation(event)
-    elif (floor==11):convert_T_to_A(event)
-    elif (floor==12 or floor==22):climate(event,mtext)
-    elif(floor==13):
+    elif (USER_Floor[UserId]==10):conversation(event)
+    elif (USER_Floor[UserId]==11):convert_T_to_A(event)
+    elif (USER_Floor[UserId]==12 or USER_Floor[UserId]==22):climate(event,mtext)
+    elif(USER_Floor[UserId]==13):
         if(mtext == "Quit"):
-            floor =1
-            print('floor : ',floor)
+            USER_Floor[UserId] =1
+            print('UserId : %s \nfloor : %s'%(UserId,USER_Floor[UserId]))
             line_reply = 'Quit done!'
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
         else:
@@ -187,19 +186,21 @@ def broadcast(event, string):
   conn.close()
 
 def start(event):
-  global floor
+  global USER_Floor
+  UserId = event.source.user_id
   Fs = ['聊天','文字轉語音','天氣預報','圖片人物分析']
   line_reply = '你想幹嘛呢 : '
   for i in range(len(Fs)):line_reply += f'\n{i+1}.{Fs[i]}'
-  floor = 1
+  USER_Floor[UserId] = 1
   line_reply+= '\n(輸入"End"結束)'
   line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
 def conversation(event):
-  global floor
+  global USER_Floor
+  UserId = event.source.user_id
   msg = event.message.text
-  print("mtext : %s\nfloor : %s"%(msg,floor))
+  print("mtext : %s UserId : %s floor : %s"%(msg,UserId,USER_Floor[UserId]))
   if(msg == 'Quit'):
-    floor = 1
+    USER_Floor[UserId] = 1
     line_reply = 'Quit done!'
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
   else:
@@ -216,12 +217,13 @@ def conversation(event):
     line_bot_api.reply_message(
       event.reply_token, TextSendMessage(text=response["choices"][0]["text"]))
 def convert_T_to_A(event):
-  global floor
+  global USER_Floor
   global ngrok_url
+  UserId=event.source.user_id
   msg = event.message.text
-  print("mtext : %s\nfloor : %s"%(msg,floor))
+  print("mtext : %s\nUserId : %s\nfloor : %s"%(msg,UserId,USER_Floor[UserId]))
   if(msg == 'Quit'):
-    floor=1
+    USER_Floor[UserId]=1
     line_reply = 'Quit done!'
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
   else:
@@ -235,27 +237,28 @@ def convert_T_to_A(event):
         duration=2000))
 def climate(event,mtext):
   CL = Climate_()
-  global floor
-  if (floor==12):
-    print("mtext : %s\nfloor : %s"%(mtext,floor))
+  global USER_Floor
+  UserId = event.source.user_id
+  if (USER_Floor[UserId]==12):
+    print("mtext : %s\nUserId : %s\nfloor : %s"%(mtext,UserId,USER_Floor[UserId]))
     #if (mtext == 'climate' or mtext=='Climate'):
     climate_data = CL#print("Climate locations : \n",climate_data['Locations'])
     line_reply=''
     for i in range(len(climate_data["Locations"])):
       line_reply+=f'{i+1}.{climate_data["Locations"][i]}\n'
     line_reply+='(Type "Quit" to exit!)'
-    floor = 22
+    USER_Floor[UserId] = 22
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     #else:
     # line_reply = 'Enter "Climate" or "climate" to start~'
     # line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
-  elif (floor==22):
-    print("mtext : %s\nfloor : %s"%(mtext,floor))
+  elif (USER_Floor[UserId]==22):
+    print("mtext : %s\nUserId : %s\nfloor : %s"%(mtext,UserId,USER_Floor[UserId]))
     line_reply=''
     climate_data = CL
     if mtext == 'quit' or mtext =='Quit' or mtext=="退出":
-      floor = 1
-      print('floor : ',floor)
+      USER_Floor[UserId] = 1
+      print('floor : ',USER_Floor[UserId])
       line_reply = 'Quit done!'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     #try:
@@ -268,7 +271,7 @@ def climate(event,mtext):
         line_reply+=f'\n第{i}天:{temp_data}'
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     elif(mtext.isdigit()==False):
-      print('climate_data = ',climate_data)
+      #print('climate_data = ',climate_data)
       try:
         tmp_location = mtext
         print('tmp_location',tmp_location)
@@ -286,6 +289,7 @@ def climate(event,mtext):
   """except:
     line_reply='Invalid input try again!!!'
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))"""
+  
 def data():
   import sqlite3
   con=sqlite3.connect(r'data.db')
@@ -296,7 +300,7 @@ def data():
   cur.execute('SELECT * FROM movie')
   test = cur.fetchall()
   print("testdb : ",test)
-  return test
+  return tes
 def deepface_f(event):
   UserId = event.source.user_id
   if (event.message.type == "image"):
