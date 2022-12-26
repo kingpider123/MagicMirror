@@ -33,7 +33,7 @@ scheduler.start()
 def job():
     broadcast(None, "早安你好")
     Today_climate = broadclimate()
-    if(int(Today_climate[1])>= 0 and int(Today_climate[1])<=50):
+    if(int(Today_climate[1])>= 8 and int(Today_climate[1])<=23):
       broadcast(None,f'今天{Today_climate[0]},記得帶傘哦~')
 
 
