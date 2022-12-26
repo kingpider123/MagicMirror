@@ -32,6 +32,9 @@ scheduler.start()
 @scheduler.task('cron', id='do_job', day='*', hour='8')
 def job():
     broadcast(None, "早安你好")
+    Today_climate = broadclimate()
+    if(int(Today_climate[1])>= 0 and int(Today_climate[1])<=50):
+      broadcast(None,f'今天{Today_climate[0]},記得帶傘哦~')
 
 
 @app.route("/")
@@ -165,6 +168,15 @@ def Input_text(event,mtext):
     else:
       line_reply='輸入 "start" 或 "Start" 來使用哦～ '
       line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
+        
+def broadclimate():
+  CL = Climate_()
+  Msg = CL['金門地區']['Code'][0]
+  Msg2 = CL['金門地區']['Weather'][0]
+  List = []
+  List.append(Msg2)
+  List.append(Msg)
+  return List
 
 def broadcast(event, string):
   conn = sqlite3.connect("line.db")
