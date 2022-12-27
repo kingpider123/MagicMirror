@@ -245,7 +245,7 @@ def conversation(event,mtext):
     #msg = event.message.text
     print("mtext : %s UserId : %s floor : %s" %
           (mtext, UserId, USER_Floor[UserId]))
-    if(mtext == 'Quit'):
+    if(mtext == 'Quit' or mtext == "quit" or mtext == "退出"):
         USER_Floor[UserId] = 1
         line_reply = 'Quit done!'
         line_bot_api.reply_message(
