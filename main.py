@@ -168,6 +168,11 @@ def Input_text(event, mtext):
         elif(mtext == "天氣預報"):
             USER_Floor[UserId] = 12
             climate(event, mtext)
+        elif(mtext == "圖片人物分析"):
+            USER_Floor[UserId] = 13
+            line_reply = '進入圖片檢測模式(輸入"Quit"退出)'
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text=line_reply))
         else:
             start(event)
 
