@@ -13,7 +13,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextSendMessage, AudioMessage, AudioSendMessage
 from deepface import DeepFace
 from Climate import Climate_
-from test import *
+from Carousel_template import *
 
 load_dotenv()
 
