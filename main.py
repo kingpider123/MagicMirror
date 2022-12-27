@@ -35,7 +35,8 @@ def job():
     Today_climate = broadclimate()
     if(int(Today_climate[1])>= 8 and int(Today_climate[1])<=23):
       broadcast(None,f'今天{Today_climate[0]},記得帶傘哦~')
-
+    if(int(Today_climate[2])<=20):
+      broadcast(None,f'今天{Today_climate[0]}最低溫為 {Today_climate[2]}°C,記得穿多一點~')
 
 @app.route("/")
 def main():
@@ -173,9 +174,11 @@ def broadclimate():
   CL = Climate_()
   Msg = CL['金門地區']['Code'][0]
   Msg2 = CL['金門地區']['Weather'][0]
+  Msg3 = CL['金門地區']['MinTemperature'][0]
   List = []
   List.append(Msg2)
   List.append(Msg)
+  List.append(Msg3)
   return List
 
 def broadcast(event, string):
