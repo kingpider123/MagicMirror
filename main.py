@@ -13,6 +13,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextSendMessage, AudioMessage, AudioSendMessage
 from deepface import DeepFace
 from Climate import Climate_
+from test import *
 
 load_dotenv()
 
@@ -227,16 +228,17 @@ def broadcast(event, string):
 
 
 def start(event):
+    message = Carousel_template()
+    #line_bot_api.reply_message(event.reply_token, message)
     global USER_Floor
     UserId = event.source.user_id
-    Fs = ['聊天', '文字轉語音', '天氣預報', '圖片人物分析']
-    line_reply = '你想幹嘛呢 : '
-    for i in range(len(Fs)):
-        line_reply += f'\n{i+1}.{Fs[i]}'
+    #Fs = ['聊天', '文字轉語音', '天氣預報', '圖片人物分析']
+    #line_reply = '你想幹嘛呢 : '
+    #for i in range(len(Fs)):
+    #    line_reply += f'\n{i+1}.{Fs[i]}'
     USER_Floor[UserId] = 1
-    line_reply += '\n(輸入"End"結束)'
-    line_bot_api.reply_message(
-        event.reply_token, TextSendMessage(text=line_reply))
+    #line_reply += '\n(輸入"End"結束)'
+    line_bot_api.reply_message(event.reply_token, message)
 
 
 def conversation(event,mtext):
