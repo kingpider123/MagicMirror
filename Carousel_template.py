@@ -8,7 +8,7 @@ def Carousel_template():
                 "type": "bubble",
                 "hero": {
                     "type": "image",
-                    "url": "https://drive.google.com/uc?export=view&id=1Rf5TILMDF-EdkRem2wFw9pQ82nuAnGm2",
+                    "url": "https://drive.google.com/uc?export=view&id=1ZUwLxPDteSLxAEs1JvufITA6Ej05wBU2",
                     "size": "full",
                     "aspectRatio": "20:13",
                     "aspectMode": "cover"
@@ -19,13 +19,13 @@ def Carousel_template():
                     "contents": [
                         {
                             "type": "text",
-                            "text": "功能",
+                            "text": "(超)功能",
                             "weight": "bold",
                             "size": "xl"
                         },
                         {
                             "type": "text",
-                            "text": "是草系寶可夢訓練家!",
+                            "text": "你想幹嘛呢: ~~~ 給你多元的選擇(4個)",
                             "style": "italic"
                         }
                     ],

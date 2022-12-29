@@ -85,8 +85,8 @@ def handle_message(event):
                 event.reply_token, TextSendMessage(text=line_reply))
     elif(event.message.type == "text"):
         mtext = event.message.text
-        print("mtext : %s\nUid : %s\nfloor : %s" %
-              (mtext, UserId, USER_Floor[UserId]))
+        #print("mtext : %s\nUid : %s\nfloor : %s" %
+        #      (mtext, UserId, USER_Floor[UserId]))
         Input_text(event, mtext)
     elif(event.message.type == "audio"):
         UserID = event.source.user_id
@@ -116,8 +116,8 @@ def handle_message(event):
 def Input_text(event, mtext):
     global USER_Floor
     UserId = event.source.user_id
-    print("mtext : %s\nUid : %s\nfloor : %s" %
-          (mtext, UserId, USER_Floor[UserId]))
+    #print("mtext : %s\nUid : %s\nfloor : %s" %
+    #      (mtext, UserId, USER_Floor[UserId]))
     if(mtext == "End" or mtext == "結束"):
         USER_Floor[UserId] = 0
         line_reply = '886~'
@@ -183,12 +183,13 @@ def Input_text(event, mtext):
     elif (USER_Floor[UserId] == 12 or USER_Floor[UserId] == 22):
         climate(event, mtext)
     elif(USER_Floor[UserId] == 13):
-        if(mtext == "Quit"):
+        if(mtext == "Quit" or mtext == "退出"):
             USER_Floor[UserId] = 1
             print('UserId : %s \nfloor : %s' % (UserId, USER_Floor[UserId]))
-            line_reply = 'Quit done!'
-            line_bot_api.reply_message(
-                event.reply_token, TextSendMessage(text=line_reply))
+            #line_reply = 'Quit done!'
+            #line_bot_api.reply_message(
+            #    event.reply_token, TextSendMessage(text=line_reply))
+            start(event)
         else:
             line_reply = '請傳送圖片(輸入"Quit"退出)'
             line_bot_api.reply_message(
@@ -250,13 +251,14 @@ def conversation(event,mtext):
     global USER_Floor
     UserId = event.source.user_id
     #msg = event.message.text
-    print("mtext : %s UserId : %s floor : %s" %
-          (mtext, UserId, USER_Floor[UserId]))
+    #print("mtext : %s UserId : %s floor : %s" %
+    #      (mtext, UserId, USER_Floor[UserId]))
     if(mtext == 'Quit' or mtext == "quit" or mtext == "退出"):
         USER_Floor[UserId] = 1
-        line_reply = 'Quit done!'
-        line_bot_api.reply_message(
-            event.reply_token, TextSendMessage(text=line_reply))
+        #line_reply = 'Quit done!'
+        #line_bot_api.reply_message(
+        #    event.reply_token, TextSendMessage(text=line_reply))
+        start(event)
     else:
         response = openai.Completion.create(model="text-davinci-003",
                                             prompt="Q: " + mtext +
@@ -277,13 +279,14 @@ def convert_T_to_A(event):
     global ngrok_url
     UserId = event.source.user_id
     msg = event.message.text
-    print("mtext : %s\nUserId : %s\nfloor : %s" %
-          (msg, UserId, USER_Floor[UserId]))
-    if(msg == 'Quit'):
+    #print("mtext : %s\nUserId : %s\nfloor : %s" %
+    #      (msg, UserId, USER_Floor[UserId]))
+    if(msg == 'Quit' or msg == "退出"):
         USER_Floor[UserId] = 1
-        line_reply = 'Quit done!'
-        line_bot_api.reply_message(
-            event.reply_token, TextSendMessage(text=line_reply))
+        #line_reply = 'Quit done!'
+        #line_bot_api.reply_message(
+        #    event.reply_token, TextSendMessage(text=line_reply))
+        start(event)
     else:
         tts = gTTS(text=msg, lang="zh-tw")
         tts.save("tts/" + msg + ".mp3")
@@ -300,8 +303,8 @@ def climate(event, mtext):
     global USER_Floor
     UserId = event.source.user_id
     if (USER_Floor[UserId] == 12):
-        print("mtext : %s\nUserId : %s\nfloor : %s" %
-              (mtext, UserId, USER_Floor[UserId]))
+        #print("mtext : %s\nUserId : %s\nfloor : %s" %
+        #      (mtext, UserId, USER_Floor[UserId]))
         # if (mtext == 'climate' or mtext=='Climate'):
         # print("Climate locations : \n",climate_data['Locations'])
         climate_data = CL
@@ -316,16 +319,17 @@ def climate(event, mtext):
         # line_reply = 'Enter "Climate" or "climate" to start~'
         # line_bot_api.reply_message(event.reply_token, TextSendMessage(text=line_reply))
     elif (USER_Floor[UserId] == 22):
-        print("mtext : %s\nUserId : %s\nfloor : %s" %
-              (mtext, UserId, USER_Floor[UserId]))
+        #print("mtext : %s\nUserId : %s\nfloor : %s" %
+        #      (mtext, UserId, USER_Floor[UserId]))
         line_reply = ''
         climate_data = CL
         if mtext == 'quit' or mtext == 'Quit' or mtext == "退出":
             USER_Floor[UserId] = 1
             print('floor : ', USER_Floor[UserId])
-            line_reply = 'Quit done!'
-            line_bot_api.reply_message(
-                event.reply_token, TextSendMessage(text=line_reply))
+            #line_reply = 'Quit done!'
+            #line_bot_api.reply_message(
+            #    event.reply_token, TextSendMessage(text=line_reply))
+            start(event)
         # try:
         elif (mtext.isdigit() and int(mtext) >= 1 and int(mtext) <= 25):
             tmp = int(mtext) - 1
