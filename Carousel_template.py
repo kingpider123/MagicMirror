@@ -67,6 +67,14 @@ def Carousel_template():
                                 "text": "圖片人物分析"
                             }
                         },
+                        {
+                            "type": "button",
+                            "action": {
+                                "type": "message",
+                                "label": "運勢分析",
+                                "text": "運勢分析"
+                            }
+                        }
                     ]
                 }
             }]}

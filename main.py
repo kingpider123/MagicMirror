@@ -1,5 +1,6 @@
 import os
 import openai
+import random
 import sqlite3
 import speech_recognition as sr
 from pydub import AudioSegment
@@ -151,6 +152,10 @@ def Input_text(event, mtext):
                     line_reply = '進入圖片檢測模式(輸入"Quit"退出)'
                     line_bot_api.reply_message(
                         event.reply_token, TextSendMessage(text=line_reply))
+                elif(int(mtext) == 5):
+                    line_reply = '您今天的運勢為' + '"' + random.choice(["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]) + '"'
+                    line_bot_api.reply_message(
+                        event.reply_token, TextSendMessage(text=line_reply))
                 else:
                     line_reply = "Invalid input try again!"
                     line_bot_api.reply_message(
@@ -174,6 +179,10 @@ def Input_text(event, mtext):
         elif(mtext == "圖片人物分析"):
             USER_Floor[UserId] = 13
             line_reply = '進入圖片檢測模式(輸入"Quit"退出)'
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text=line_reply))
+        elif(mtext == "運勢分析"):
+            line_reply = '您今天的運勢為' + '"' + random.choice(["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]) + '"'
             line_bot_api.reply_message(
                 event.reply_token, TextSendMessage(text=line_reply))
         else:
