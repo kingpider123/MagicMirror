@@ -125,8 +125,11 @@ def Input_text(event, mtext):
             event.reply_token, TextSendMessage(text=line_reply))
     elif(int(USER_Floor[UserId]) == 0 and (mtext == 'start' or mtext == 'Start' or mtext == "開始")):
         start(event)
-    elif(int(USER_Floor[UserId]) == 0 and (mtext == 'broadcast' or mtext == 'Broadcast')):
-        broadcast(event, "廣播測試")
+    elif(int(USER_Floor[UserId]) == 0 and (mtext == 'remember' or mtext == 'Remember' or mtext == "記住我")):
+        broadcast(event, None)
+        line_reply = '記錄完畢'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
     elif (int(USER_Floor[UserId]) == 1):
         if mtext.isdigit():
             try:
@@ -226,9 +229,10 @@ def broadcast(event, string):
 
     conn.commit()
 
-    rows = cursor.execute("SELECT * FROM users").fetchall()
-    for row in rows:
-        line_bot_api.push_message(row[0], TextSendMessage(text=string))
+    if string is not None:
+        rows = cursor.execute("SELECT * FROM users").fetchall()
+        for row in rows:
+            line_bot_api.push_message(row[0], TextSendMessage(text=string))
 
     conn.close()
 
