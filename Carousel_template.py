@@ -25,7 +25,7 @@ def Carousel_template():
                         },
                         {
                             "type": "text",
-                            "text": "你想幹嘛呢: ~~~ 給你多元的選擇(4個)",
+                            "text": "你想幹嘛呢: ~~~ 給你多元的選擇",
                             "style": "italic"
                         }
                     ],
@@ -81,6 +81,14 @@ def Carousel_template():
                                 "type": "message",
                                 "label": "行事曆",
                                 "text": "行事曆"
+                            }
+                        },
+                        {
+                            "type": "button",
+                            "action": {
+                                "type": "message",
+                                "label": "讀新聞",
+                                "text": "讀新聞"
                             }
                         }
                     ]

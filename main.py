@@ -17,7 +17,7 @@ from linebot.models import MessageEvent, TextSendMessage, AudioMessage, AudioSen
 from deepface import DeepFace
 from Climate import Climate_
 from Carousel_template import *
-
+from News import News
 load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -26,7 +26,6 @@ handler = WebhookHandler(os.getenv("SECRET"))
 ngrok_url = os.getenv("NGROK_URL")
 
 USER_Floor = {}
-
 app = Flask(__name__)
 scheduler = APScheduler()
 scheduler.init_app(app)
@@ -182,6 +181,11 @@ def Input_text(event, mtext):
                     line_reply = '進入行事曆模式。。。(輸入"Quit"退出)\n格式:\nyyyy/mm/dd HH:MM:SS\nTEXT'
                     line_bot_api.reply_message(
                         event.reply_token, TextSendMessage(text=line_reply))
+                elif(int(mtext) == 7):
+                    USER_Floor[UserId] =15
+                    line_reply= '進入讀新聞模式(請輸入"開始"獲得最新的新聞----輸入"Quit"退出)'
+                    line_bot_api.reply_message(
+                        event.reply_token,TextSendMessage(text=line_reply))
                 else:
                     line_reply = "Invalid input try again!"
                     line_bot_api.reply_message(
@@ -216,6 +220,11 @@ def Input_text(event, mtext):
             line_reply = '進入行事曆模式。。。(輸入"Quit"退出)\n格式:\nyyyy/mm/dd HH:MM:SS\nTEXT'
             line_bot_api.reply_message(
                 event.reply_token, TextSendMessage(text=line_reply))
+        elif(mtext =="讀新聞"):
+            USER_Floor[UserId] = 15
+            line_reply= '進入讀新聞模式(請輸入"開始"獲得最新的新聞----輸入"Quit"退出)'
+            line_bot_api.reply_message(
+                event.reply_token,TextSendMessage(text=line_reply))
         else:
             start(event)
 
@@ -247,6 +256,13 @@ def Input_text(event, mtext):
             start(event)
         else:
             add_note(event, mtext)
+    elif(USER_Floor[UserId] == 15):
+        if(mtext =="Quit" or mtext=="退出" or mtext=="quit"):
+            USER_Floor[UserId] = 1
+            print('UserId : %s \nfloor : %s' % (UserId, USER_Floor[UserId]))
+            start(event)
+        else:
+            readNews(event)
     else:
         line_reply = '輸入 "start" 或 "Start" 來使用哦～ '
         line_bot_api.reply_message(
@@ -466,7 +482,46 @@ def deepface_f(event):
         line_bot_api.reply_message(
             event.reply_token, TextSendMessage(text=line_reply))
 
-
+def readNews(event):
+    global ngrok_url
+    count=0
+    check=0
+    msg = event.message.text
+    coverpage_news= News()
+    if (msg=="開始"):
+        check=1
+        tts = gTTS(text=coverpage_news[count].text, lang="zh-tw")
+        tts.save("tts/" + msg + ".mp3")
+        line_bot_api.reply_message(
+                event.reply_token,
+                AudioSendMessage(
+                    original_content_url=ngrok_url+"/tts/" +
+                    quote(msg),duration=300000))
+    if (check==1):
+        if (msg=="下一篇" or msg=="下"):
+            count=count+1
+            tts = gTTS(text=coverpage_news[count].text, lang="zh-tw")
+            tts.save("tts/" + msg + ".mp3")
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    AudioSendMessage(
+                        original_content_url=ngrok_url+"/tts/" +
+                        quote(msg),duration=300000))
+        elif (count!=0 and(msg=="上一篇" or msg=="上")):
+            count=count-1    
+            tts = gTTS(text=coverpage_news[count].text, lang="zh-tw")
+            tts.save("tts/" + msg + ".mp3")
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    AudioSendMessage(
+                        original_content_url=ngrok_url+"/tts/" +
+                        quote(msg),duration=300000))
+        elif (count==0 and(msg=="上一篇" or msg=="上")):
+            line_bot_api.reply_message(event.reply_token,TextSendMessage(text="已經是最新的新聞了啦!"))
+    else:
+        line_bot_api.reply_message(event.reply_token,TextSendMessage(text="請您輸入開始才可以獲得新聞!"))
+        
+    
 if __name__ == '__main__':
     app.run()
 

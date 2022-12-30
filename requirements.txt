@@ -9,3 +9,4 @@ Flask
 flask_apscheduler
 line-bot-sdk
 deepface
+beautifulsoup4
