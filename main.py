@@ -1,8 +1,10 @@
 import os
+import time
 import openai
 import random
 import sqlite3
 import speech_recognition as sr
+from datetime import datetime
 from pydub import AudioSegment
 from dotenv import load_dotenv
 from gtts import gTTS
@@ -40,6 +42,25 @@ def job():
     if(int(Today_climate[2]) <= 20):
         broadcast(
             None, f'今天{Today_climate[0]}最低溫為 {Today_climate[2]}°C,記得穿多一點~')
+
+
+@scheduler.task('interval', id='do_job_1', seconds=30, misfire_grace_time=900)
+def job1():
+    conn = sqlite3.connect("line.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS notes (user_id TEXT, time TEXT, msg TEXT)")
+
+    rows = cursor.execute("SELECT * FROM notes").fetchall()
+    for row in rows:
+        note_time = time.mktime(datetime.strptime(row[1], "%Y/%m/%d %H:%M:%S").timetuple())
+        if abs(note_time - time.time()) < 30:
+            line_bot_api.push_message(row[0], TextSendMessage(text=row[2]))
+            cursor.execute("DELETE FROM notes WHERE user_id = ? AND time = ? AND msg = ?", (row[0], row[1], row[2]))
+        if time.time() - note_time >= 30:
+            cursor.execute("DELETE FROM notes WHERE user_id = ? AND time = ? AND msg = ?", (row[0], row[1], row[2]))
+
+    conn.commit()
+    conn.close()
 
 
 @app.route("/")
@@ -156,6 +177,11 @@ def Input_text(event, mtext):
                     line_reply = '您今天的運勢為' + '"' + random.choice(["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]) + '"'
                     line_bot_api.reply_message(
                         event.reply_token, TextSendMessage(text=line_reply))
+                elif(int(mtext) == 6):
+                    USER_Floor[UserId] = 14
+                    line_reply = '進入行事曆模式。。。(輸入"Quit"退出)\n格式:\nyyyy/mm/dd HH:MM:SS\nTEXT'
+                    line_bot_api.reply_message(
+                        event.reply_token, TextSendMessage(text=line_reply))
                 else:
                     line_reply = "Invalid input try again!"
                     line_bot_api.reply_message(
@@ -185,6 +211,11 @@ def Input_text(event, mtext):
             line_reply = '您今天的運勢為' + '"' + random.choice(["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]) + '"'
             line_bot_api.reply_message(
                 event.reply_token, TextSendMessage(text=line_reply))
+        elif(mtext == "行事曆"):
+            USER_Floor[UserId] = 14
+            line_reply = '進入行事曆模式。。。(輸入"Quit"退出)\n格式:\nyyyy/mm/dd HH:MM:SS\nTEXT'
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text=line_reply))
         else:
             start(event)
 
@@ -206,10 +237,37 @@ def Input_text(event, mtext):
             line_reply = '請傳送圖片(輸入"Quit"退出)'
             line_bot_api.reply_message(
                 event.reply_token, TextSendMessage(text=line_reply))
+    elif(USER_Floor[UserId] == 14):
+        if(mtext == "Quit" or mtext == "退出"):
+            USER_Floor[UserId] = 1
+            print('UserId : %s \nfloor : %s' % (UserId, USER_Floor[UserId]))
+            #line_reply = 'Quit done!'
+            #line_bot_api.reply_message(
+            #    event.reply_token, TextSendMessage(text=line_reply))
+            start(event)
+        else:
+            add_note(event, mtext)
     else:
         line_reply = '輸入 "start" 或 "Start" 來使用哦～ '
         line_bot_api.reply_message(
             event.reply_token, TextSendMessage(text=line_reply))
+
+
+def add_note(event, mtext):
+    note = mtext.split("\n")
+    conn = sqlite3.connect("line.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS notes (user_id TEXT, time TEXT, msg TEXT)")
+
+    try:
+        cursor.execute("INSERT INTO notes (user_id, time, msg) VALUES (?, ?, ?)", (event.source.user_id, note[0], note[1]))
+    except:
+        line_reply = '格式錯誤!'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+
+    conn.commit()
+    conn.close()
 
 
 def broadclimate():
@@ -236,13 +294,12 @@ def broadcast(event, string):
             cursor.execute("INSERT INTO users (user_id) VALUES (?)",
                            (event.source.user_id,))
 
-    conn.commit()
-
     if string is not None:
         rows = cursor.execute("SELECT * FROM users").fetchall()
         for row in rows:
             line_bot_api.push_message(row[0], TextSendMessage(text=string))
 
+    conn.commit()
     conn.close()
 
 
