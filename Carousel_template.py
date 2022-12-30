@@ -74,6 +74,14 @@ def Carousel_template():
                                 "label": "運勢分析",
                                 "text": "運勢分析"
                             }
+                        },
+                        {
+                            "type": "button",
+                            "action": {
+                                "type": "message",
+                                "label": "行事曆",
+                                "text": "行事曆"
+                            }
                         }
                     ]
                 }
