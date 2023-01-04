@@ -151,6 +151,38 @@ def Input_text(event, mtext):
         line_reply = '記錄完畢'
         line_bot_api.reply_message(
             event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext == "聊天"):
+        USER_Floor[UserId] = 10
+        line_reply = '進入聊天模式。。。(請開始聊天,輸入"Quit"退出)'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext == "文字轉語音"):
+        USER_Floor[UserId] = 11
+        line_reply = '進入文字轉語音模式。。。(輸入"Quit"退出)'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext == "天氣預報"):
+        USER_Floor[UserId] = 12
+        climate(event, mtext)
+    elif(mtext == "圖片人物分析"):
+        USER_Floor[UserId] = 13
+        line_reply = '進入圖片檢測模式(輸入"Quit"退出)'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext == "運勢分析"):
+        line_reply = '您今天的運勢為' + '"' + random.choice(["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]) + '"'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext == "行事曆"):
+        USER_Floor[UserId] = 14
+        line_reply = '進入行事曆模式。。。(輸入"Quit"退出)\n格式:\nyyyy/mm/dd HH:MM:SS\nTEXT'
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=line_reply))
+    elif(mtext =="讀新聞"):
+        USER_Floor[UserId] = 15
+        line_reply= '進入讀新聞模式(請輸入"開始"獲得最新的新聞----輸入"Quit"退出)'
+        line_bot_api.reply_message(
+            event.reply_token,TextSendMessage(text=line_reply))
     elif (int(USER_Floor[UserId]) == 1):
         if mtext.isdigit():
             try:
